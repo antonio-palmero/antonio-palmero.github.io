@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Basic SEO -->
+  <title>Antonio Rodríguez-Palmero | Telecommunications Engineering Student</title>
+  <meta name="description" content="Telecommunications Engineering student at ETSIT-UPM focused on GNSS, space systems, satellite communications and RF. Seeking internships in the space and defence sector.">
+  <meta name="author" content="Antonio Rodríguez-Palmero Tajuelo">
+
+  <!-- Light/dark: tells the browser that the page supports both schemes -->
+  <meta name="color-scheme" content="light dark">
+
+  <!-- Open Graph (LinkedIn, WhatsApp, etc.). These URLs MUST be absolute. -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://antonio-palmero.github.io/">
+  <meta property="og:title" content="Antonio Rodríguez-Palmero | Telecommunications Engineering Student">
+  <meta property="og:description" content="GNSS, space systems, satellite communications and RF. Projects, background and contact.">
+  <meta property="og:image" content="https://antonio-palmero.github.io/img/og-image.png">
+  <meta property="og:image:alt" content="Antonio Rodríguez-Palmero – engineering portfolio">
+  <meta property="og:locale" content="en_GB">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="canonical" href="https://antonio-palmero.github.io/">
+
+  <!-- Fonts: Poppins (headings) + Inter (body text) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@300;500;600;800&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Marks that JS is available as early as possible (before the page is painted),
+       so the CSS can hide the mobile menu without a visible "flash". -->
+  <script>document.documentElement.classList.add("js");</script>
+
+  <!-- defer: scripts run after the HTML is parsed, without blocking rendering,
+       and in this order (data first, then the logic that uses it). -->
+  <script src="js/projects.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+
+<body>
+  <!-- Keyboard users can jump straight past the menu -->
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <nav class="nav container" aria-label="Main">
+      <a class="nav__brand" href="#top">
+        <span class="nav__logo" aria-hidden="true">ARP</span>
+        <span>Antonio Rodríguez-Palmero</span>
+      </a>
+
+      <!-- Mobile menu button (behaviour added in phase 3) -->
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu">
+        <span class="visually-hidden">Menu</span>
+        <span class="nav__toggle-bar" aria-hidden="true"></span>
+      </button>
+
+      <ul class="nav__menu" id="nav-menu">
+        <li><a href="#projects"><span class="nav__num" aria-hidden="true">01</span>Projects</a></li>
+        <li><a href="#about"><span class="nav__num" aria-hidden="true">02</span>About</a></li>
+        <li><a href="#skills"><span class="nav__num" aria-hidden="true">03</span>Skills</a></li>
+        <li><a href="#contact"><span class="nav__num" aria-hidden="true">04</span>Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- ================= HERO ================= -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero__inner container">
+        <div class="hero__content">
+          <p class="hero__overline">Telecommunications Engineering · ETSIT-UPM</p>
+          <h1 class="hero__title" id="hero-title">
+            <span class="hero__line">Antonio</span>
+            <span class="hero__line hero__line--accent">Rodríguez-Palmero</span>
+            <span class="hero__line">Tajuelo</span>
+          </h1>
+          <p class="hero__lead">
+            Telecommunications engineering student focused on satellite navigation,
+            space systems and RF — from orbits and link budgets to the signal processing in between.
+          </p>
+          <div class="btn-group">
+            <a class="btn btn--primary" href="https://github.com/antonio-palmero" target="_blank" rel="noopener">GitHub</a>
+            <a class="btn" href="https://www.linkedin.com/in/antonio-rodr%C3%ADguez-palmero-tajuelo-6416802aa/" target="_blank" rel="noopener">LinkedIn</a>
+          </div>
+          <p class="hero__status">
+            <span class="status-dot" aria-hidden="true"></span>
+            Open to internships · Space &amp; defence
+          </p>
+        </div>
+
+        <!-- Decorative orbits (LEO, MEO, IGSO, GEO — like the Orbit Explorer project).
+             aria-hidden: screen readers skip it because it carries no information. -->
+        <svg class="hero__orbits" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+          <defs>
+            <radialGradient id="earth-gradient" cx="35%" cy="35%" r="70%">
+              <stop offset="0%" class="earth-stop-1"/>
+              <stop offset="100%" class="earth-stop-2"/>
+            </radialGradient>
+          </defs>
+
+          <circle cx="200" cy="200" r="30" fill="url(#earth-gradient)"/>
+
+          <!-- Each orbit: an ellipse path + a satellite that follows it (animateMotion).
+               Path = two half-ellipse arcs: M rx 0  A rx ry 0 1 0 -rx 0  A rx ry 0 1 0 rx 0 -->
+          <g transform="translate(200 200)">
+            <path class="orbit" d="M62 0A62 62 0 1 0 -62 0A62 62 0 1 0 62 0"/>
+            <circle class="sat sat--leo" r="4">
+              <animateMotion dur="9s" repeatCount="indefinite" path="M62 0A62 62 0 1 0 -62 0A62 62 0 1 0 62 0"/>
+            </circle>
+          </g>
+
+          <g transform="translate(200 200) rotate(28)">
+            <path class="orbit" d="M118 0A118 46 0 1 0 -118 0A118 46 0 1 0 118 0"/>
+            <circle class="sat sat--meo" r="4">
+              <animateMotion dur="22s" begin="-8s" repeatCount="indefinite" path="M118 0A118 46 0 1 0 -118 0A118 46 0 1 0 118 0"/>
+            </circle>
+          </g>
+
+          <g transform="translate(200 200) rotate(-35)">
+            <path class="orbit" d="M150 0A150 72 0 1 0 -150 0A150 72 0 1 0 150 0"/>
+            <circle class="sat sat--igso" r="4">
+              <animateMotion dur="34s" begin="-20s" repeatCount="indefinite" path="M150 0A150 72 0 1 0 -150 0A150 72 0 1 0 150 0"/>
+            </circle>
+          </g>
+
+          <g transform="translate(200 200)">
+            <path class="orbit orbit--dashed" d="M182 0A182 182 0 1 0 -182 0A182 182 0 1 0 182 0"/>
+            <circle class="sat sat--geo" r="4.5">
+              <animateMotion dur="50s" begin="-12s" repeatCount="indefinite" path="M182 0A182 182 0 1 0 -182 0A182 182 0 1 0 182 0"/>
+            </circle>
+          </g>
+
+          <text class="orbit-label" x="200" y="130" text-anchor="middle">LEO</text>
+          <text class="orbit-label" x="310" y="276">MEO</text>
+          <text class="orbit-label" x="330" y="104">IGSO</text>
+          <text class="orbit-label" x="200" y="11" text-anchor="middle">GEO</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ================= PROJECTS ================= -->
+    <section class="section" id="projects" aria-labelledby="projects-title">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow"><span class="eyebrow__num">01</span>Projects</p>
+          <h2 class="section__title" id="projects-title">Things I've built</h2>
+          <p class="section__intro">Hands-on work in orbital mechanics, GNSS and signal processing.</p>
+        </header>
+
+        <!-- Cards are generated by js/main.js from the PROJECTS array (js/projects.js) -->
+        <ul class="projects" id="projects-list"></ul>
+
+        <noscript>
+          <p>Enable JavaScript to see the project cards, or browse them on
+            <a href="https://github.com/antonio-palmero">GitHub</a>.</p>
+        </noscript>
+      </div>
+    </section>
+
+    <!-- ================= ABOUT ================= -->
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow"><span class="eyebrow__num">02</span>About</p>
+          <h2 class="section__title" id="about-title">From signals to orbits</h2>
+        </header>
+
+        <div class="about">
+          <div class="about__text">
+            <p>
+              I study <strong>Telecommunication Technologies and Services Engineering</strong> (GITST)
+              at the ETSIT – Universidad Politécnica de Madrid, specialising in
+              <strong>Telecommunication Systems</strong>. My coursework covers digital transmission,
+              antennas, microwaves, radiocommunications and signal processing.
+            </p>
+            <p>
+              I'm most interested in <strong>satellite navigation (GNSS)</strong>, space systems and
+              satellite communications — understanding how a signal travels from orbit to a receiver
+              and what it takes to make that link reliable.
+            </p>
+            <p class="callout">
+              <strong>Currently looking for:</strong> internships in the space and defence sector.
+            </p>
+          </div>
+
+          <dl class="card facts">
+            <div class="facts__row">
+              <dt>Education</dt>
+              <dd>BSc Telecommunication Technologies and Services Engineering<br>
+                <span class="muted">ETSIT – Universidad Politécnica de Madrid</span></dd>
+            </div>
+            <div class="facts__row">
+              <dt>Distinction</dt>
+              <dd>ESTALMAT programme (Mathematical Talent Stimulation)<br>
+                <span class="muted">Universidad de Castilla-La Mancha, 2018–2022</span></dd>
+            </div>
+            <div class="facts__row">
+              <dt>Interests</dt>
+              <dd>GNSS · Space systems · SatCom · RF</dd>
+            </div>
+            <div class="facts__row">
+              <dt>Languages</dt>
+              <dd>Spanish (native) · English</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SKILLS ================= -->
+    <section class="section" id="skills" aria-labelledby="skills-title">
+      <div class="container">
+        <header class="section__head">
+          <p class="eyebrow"><span class="eyebrow__num">03</span>Skills</p>
+          <h2 class="section__title" id="skills-title">Toolbox</h2>
+        </header>
+
+        <div class="skills">
+          <div class="card">
+            <h3 class="card__title">Programming &amp; tools</h3>
+            <ul class="tags">
+              <li>Python</li>
+              <li>MATLAB</li>
+              <li>C</li>
+              <li>VHDL</li>
+              <li>Git</li>
+              <li>Linux</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 class="card__title">Engineering background</h3>
+            <ul class="tags">
+              <li>Digital transmission</li>
+              <li>Antennas</li>
+              <li>Microwaves</li>
+              <li>Radiocommunications</li>
+              <li>Signal processing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CONTACT ================= -->
+    <section class="section" id="contact" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="card contact">
+          <div>
+            <p class="eyebrow"><span class="eyebrow__num">04</span>Contact</p>
+            <h2 class="section__title" id="contact-title">Let's talk space.</h2>
+            <p class="section__intro">
+              Open to internship opportunities in the space and defence sector.
+              Drop me an email or reach out on LinkedIn.
+            </p>
+            <div class="email">
+              <a class="email__address" href="mailto:palmeroantonio4@gmail.com">palmeroantonio4@gmail.com</a>
+              <!-- Shown only when JS is available (it needs JS to work) -->
+              <button class="btn btn--small email__copy" type="button" data-copy="palmeroantonio4@gmail.com" hidden>
+                Copy <span class="visually-hidden">email address</span>
+              </button>
+              <!-- aria-live: screen readers announce "Copied" when the text changes -->
+              <span class="email__feedback" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="btn-group">
+            <a class="btn btn--primary" href="mailto:palmeroantonio4@gmail.com">Email me</a>
+            <a class="btn" href="https://www.linkedin.com/in/antonio-rodr%C3%ADguez-palmero-tajuelo-6416802aa/" target="_blank" rel="noopener">LinkedIn</a>
+            <a class="btn" href="https://github.com/antonio-palmero" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© <span id="year">2026</span> Antonio Rodríguez-Palmero Tajuelo · Built with plain HTML, CSS &amp; JavaScript</p>
+    </div>
+  </footer>
+</body>
+</html>

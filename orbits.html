@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>3D Orbit Viewer | Antonio Rodríguez-Palmero</title>
+  <meta name="description" content="Interactive 3D simulation of four satellites (LEO, Galileo MEO, GEO and IGSO) over 24 hours, from the Satellite Orbit Explorer project.">
+  <meta name="author" content="Antonio Rodríguez-Palmero Tajuelo">
+  <meta name="color-scheme" content="light dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="3D Orbit Viewer | Antonio Rodríguez-Palmero">
+  <meta property="og:description" content="Four satellites, four orbital regimes, 24 hours: an interactive 3D simulation.">
+  <meta property="og:image" content="https://antonio-palmero.github.io/img/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Embedded mode (orbits.html?embed=1, used inside the project page):
+       set before painting so the header never flashes -->
+  <script>
+    document.documentElement.classList.add("js");
+    if (new URLSearchParams(location.search).has("embed")) {
+      document.documentElement.classList.add("is-embed");
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@300;500;600;800&display=swap">
+
+  <!-- CesiumJS from a CDN, pinned to an exact version (a new release can never break the page).
+       No Cesium ion token is used: imagery comes from textures shipped inside this build. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.123.0/Build/Cesium/Widgets/widgets.css">
+  <script src="https://cdn.jsdelivr.net/npm/cesium@1.123.0/Build/Cesium/Cesium.js" defer></script>
+
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+  <!-- Orbit data from the Python project (window.ORBITS_WEB_DATA). Loaded as a script, not with
+       fetch(), so the viewer also works when the HTML is opened directly from disk (file://). -->
+  <script src="data/orbits_web.js" defer></script>
+  <script src="js/orbits.js" defer></script>
+</head>
+
+<body class="viewer-page">
+  <a class="skip-link" href="#viewer-panel">Skip to viewer controls</a>
+
+  <header class="site-header">
+    <nav class="nav container" aria-label="Main">
+      <a class="nav__brand" href="index.html">
+        <span class="nav__logo" aria-hidden="true">ARP</span>
+        <span>Antonio Rodríguez-Palmero</span>
+      </a>
+
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu">
+        <span class="visually-hidden">Menu</span>
+        <span class="nav__toggle-bar" aria-hidden="true"></span>
+      </button>
+
+      <ul class="nav__menu" id="nav-menu">
+        <li><a href="index.html#projects" aria-current="true"><span class="nav__num" aria-hidden="true">01</span>Projects</a></li>
+        <li><a href="index.html#about"><span class="nav__num" aria-hidden="true">02</span>About</a></li>
+        <li><a href="index.html#skills"><span class="nav__num" aria-hidden="true">03</span>Skills</a></li>
+        <li><a href="index.html#contact"><span class="nav__num" aria-hidden="true">04</span>Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="viewer" id="main">
+    <h1 class="visually-hidden">3D orbit viewer: Satellite Orbit Explorer</h1>
+
+    <!-- Cesium draws the globe, the timeline and the info box inside this div -->
+    <div class="viewer__globe" id="cesium" role="application"
+         aria-label="3D globe with four satellites. Drag to rotate, scroll or pinch to zoom."></div>
+
+    <p class="viewer__status" id="viewer-status" role="status">Loading the simulation…</p>
+
+    <!-- Our own panel: playback, reference frame and legend -->
+    <section class="viewer-panel" id="viewer-panel" aria-label="Viewer controls" hidden>
+      <div class="viewer-panel__row">
+        <button class="btn btn--small btn--primary" type="button" id="play-btn" aria-pressed="true">
+          <span aria-hidden="true" id="play-icon">❚❚</span> <span id="play-label">Pause</span>
+        </button>
+        <label class="viewer-panel__speed">
+          <span>Speed</span>
+          <select id="speed-select">
+            <option value="60">×60 (1 min/s)</option>
+            <option value="300" selected>×300 (5 min/s)</option>
+            <option value="900">×900 (15 min/s)</option>
+            <option value="3600">×3600 (1 h/s)</option>
+          </select>
+        </label>
+      </div>
+
+      <p class="viewer-panel__time"><span>UTC</span> <time id="clock-readout">—</time></p>
+
+      <div class="segmented" role="group" aria-label="Reference frame">
+        <button type="button" class="segmented__btn" data-frame="ecef" aria-pressed="true">Earth-fixed <small>ECEF</small></button>
+        <button type="button" class="segmented__btn" data-frame="inertial" aria-pressed="false">Inertial <small>ICRF</small></button>
+      </div>
+
+      <details class="viewer-panel__legend" open>
+        <summary>Satellites &amp; what you see</summary>
+        <ul class="legend" id="legend"></ul>
+        <p class="legend__explain" id="frame-explain"></p>
+        <p class="legend__note" id="model-note"></p>
+      </details>
+    </section>
+
+    <a class="viewer__fullpage" id="fullpage-link" href="orbits.html" target="_blank" rel="noopener">Open full page ↗</a>
+  </main>
+</body>
+</html>

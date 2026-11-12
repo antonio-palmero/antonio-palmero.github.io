@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Generic values; main.js replaces title and description with the project's own -->
+  <title>Project | Antonio Rodríguez-Palmero</title>
+  <meta name="description" content="Engineering project by Antonio Rodríguez-Palmero, Telecommunications Engineering student at ETSIT-UPM.">
+  <meta name="author" content="Antonio Rodríguez-Palmero Tajuelo">
+  <meta name="color-scheme" content="light dark">
+
+  <!-- Open Graph: social networks don't run JavaScript, so these stay generic -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Projects | Antonio Rodríguez-Palmero">
+  <meta property="og:description" content="GNSS, space systems, satellite communications and RF projects.">
+  <meta property="og:image" content="https://antonio-palmero.github.io/img/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@300;500;600;800&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+  <script>document.documentElement.classList.add("js");</script>
+  <script src="js/projects.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Same header as index.html: links point back to the sections of the home page -->
+  <header class="site-header">
+    <nav class="nav container" aria-label="Main">
+      <a class="nav__brand" href="index.html">
+        <span class="nav__logo" aria-hidden="true">ARP</span>
+        <span>Antonio Rodríguez-Palmero</span>
+      </a>
+
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu">
+        <span class="visually-hidden">Menu</span>
+        <span class="nav__toggle-bar" aria-hidden="true"></span>
+      </button>
+
+      <ul class="nav__menu" id="nav-menu">
+        <!-- aria-current="page": we are inside the Projects area -->
+        <li><a href="index.html#projects" aria-current="true"><span class="nav__num" aria-hidden="true">01</span>Projects</a></li>
+        <li><a href="index.html#about"><span class="nav__num" aria-hidden="true">02</span>About</a></li>
+        <li><a href="index.html#skills"><span class="nav__num" aria-hidden="true">03</span>Skills</a></li>
+        <li><a href="index.html#contact"><span class="nav__num" aria-hidden="true">04</span>Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Filled in by main.js from the project whose id is in the URL (?id=...) -->
+    <article class="detail" id="project-page">
+      <div class="container detail__container">
+        <p class="detail__loading">Loading project…</p>
+      </div>
+    </article>
+
+    <noscript>
+      <div class="container detail__container">
+        <p>This page needs JavaScript to show the project. You can also browse the code on
+          <a href="https://github.com/antonio-palmero">GitHub</a>.</p>
+      </div>
+    </noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© <span id="year">2026</span> Antonio Rodríguez-Palmero Tajuelo · Built with plain HTML, CSS &amp; JavaScript</p>
+    </div>
+  </footer>
+</body>
+</html>
