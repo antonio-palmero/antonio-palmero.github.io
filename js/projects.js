@@ -249,8 +249,8 @@ const PROJECTS = [
       tagline: "How do two very different constellations look from the same place on Earth?",
       demoLabel: "Launch Madrid's sky in 3D",
       demoHint:
-        "It opens at the current time when that falls inside the data window. Drag the time bar, " +
-        "switch frames and watch the sky plot follow the clock",
+        "The data is recomputed every hour, so it opens at the current time and plays at ×300. " +
+        "Press Now for real time, drag the time bar, switch frames and watch the sky plot follow the clock",
       facts: "data",
 
       sections: [
@@ -319,6 +319,10 @@ const PROJECTS = [
                 Each crossing of the mask gives a pass: rise, set, duration and maximum elevation.</li>
               <li><strong>Web export.</strong> Earth-fixed and inertial positions, azimuth/elevation and passes
                 go into one data file that this page and the 3D viewer read directly.</li>
+              <li><strong>Always up to date.</strong> A scheduled GitHub Actions job runs the Python script
+                every hour and republishes this page, its figures and the 3D viewer, so the 24-hour window
+                always starts within the last hour. The script's 2-hour cache is kept between runs, so
+                CelesTrak is never asked more often than it allows.</li>
             </ol>
           `,
         },

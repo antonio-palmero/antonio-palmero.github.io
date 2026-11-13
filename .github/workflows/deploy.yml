@@ -1,0 +1,105 @@
+# Builds and publishes the site to GitHub Pages.
+#
+# Every hour (and on every push) it runs the Galileo vs Starlink Python project,
+# so the project page, its figures and the 3D viewer always show a 24 h window
+# that starts at most about an hour ago.
+#
+# CelesTrak asks users not to download the same data more than once every 2 hours.
+# The script already enforces that: it keeps a cache in data/ and only downloads
+# again when the cache is older than CACHE_HOURS (2 h). The cache is carried from
+# one run to the next with actions/cache, so hourly runs reuse it in between.
+
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "7 * * * *"      # every hour at :07 (GitHub may start scheduled runs a few minutes late)
+  workflow_dispatch:          # "Run workflow" button in the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the portfolio
+        uses: actions/checkout@v4
+
+      - name: Check out the Galileo vs Starlink project
+        uses: actions/checkout@v4
+        with:
+          repository: antonio-palmero/galileo-vs-starlink-madrid
+          path: _gvs
+
+      # Restores the newest CelesTrak cache (data/) and the last good outputs (outputs/).
+      # A new key on every run means the cache is saved again after each run.
+      - name: Restore CelesTrak cache and last outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            _gvs/data
+            _gvs/outputs
+          key: gvs-${{ github.run_id }}
+          restore-keys: gvs-
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: _gvs/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r _gvs/requirements.txt pillow
+
+      # If CelesTrak is down, the site is still published with the last good data.
+      - name: Run the project (new 24 h window starting now)
+        id: run
+        continue-on-error: true
+        working-directory: _gvs
+        env:
+          MPLBACKEND: Agg     # no screen: plt.show() does nothing
+        run: python galileo_vs_starlink.py
+
+      - name: Copy data and figures into the site
+        run: |
+          if [ ! -f _gvs/outputs/orbits_web.js ]; then
+            echo "::warning::No new outputs; publishing the data committed in the repo."
+            exit 0
+          fi
+          [ "${{ steps.run.outcome }}" = "success" ] || echo "::warning::The script failed; publishing the last good outputs."
+          cp _gvs/outputs/orbits_web.js data/galileo-vs-starlink-madrid/orbits_web.js
+          python - <<'EOF'
+          from PIL import Image
+          for name in ("elevation_madrid", "skyplot_madrid"):
+              Image.open(f"_gvs/outputs/{name}.png").convert("RGB").save(
+                  f"img/galileo-vs-starlink/{name}.webp", "WEBP", quality=85, method=6)
+          EOF
+          head -c 120 data/galileo-vs-starlink-madrid/orbits_web.js; echo
+
+      - name: Remove build-only files
+        run: rm -rf _gvs
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

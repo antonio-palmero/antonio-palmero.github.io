@@ -274,6 +274,14 @@ function groupSatellites(data) {
   return groups;
 }
 
+// "25 min ago", "3 h ago": how long ago the data window started (the data is rebuilt hourly)
+function timeAgo(iso) {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = minutes / 60;
+  return hours < 48 ? `${Math.round(hours)} h ago` : `${Math.round(hours / 24)} days ago`;
+}
+
 function windowHours(data) {
   return ((data.n_points - 1) * data.step_s) / 3600;
 }
@@ -287,7 +295,10 @@ function dataFacts(data) {
       value: String(data.satellites.length),
       label: `satellites: ${[...groups].map(([g, sats]) => `${sats.length} ${g}`).join(" · ")}`,
     },
-    { value: `${fmt1(windowHours(data))} h`, label: `window from ${fmtUtc(data.start_utc)} UTC` },
+    {
+      value: `${fmt1(windowHours(data))} h`,
+      label: `window from ${fmtUtc(data.start_utc)} UTC (computed ${timeAgo(data.start_utc)})`,
+    },
     ...(mask !== undefined ? [{ value: String(passes), label: `passes above the ${mask}° mask` }] : []),
     { value: `${data.step_s} s`, label: "between samples" },
   ];

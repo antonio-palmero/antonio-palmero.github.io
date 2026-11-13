@@ -160,7 +160,9 @@
     clock.currentTime = startsLive ? Cesium.JulianDate.now() : start.clone();
     clock.clockRange = Cesium.ClockRange.LOOP_STOP;
     clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK_MULTIPLIER;
-    clock.multiplier = startsLive ? 1 : 300;     // real time when showing "now"
+    // ×300 even when starting "now": in real time (×1) the satellites barely move on screen,
+    // so the viewer looked frozen. The "Now" button switches to real time on demand.
+    clock.multiplier = 300;
     clock.shouldAnimate = !reduceMotion;
     viewer.timeline.zoomTo(start, stop);
 
