@@ -195,8 +195,8 @@ const PROJECTS = [
               <li><strong>Choosing an orbit:</strong> each regime is a trade-off between coverage, delay and how many
                 satellites you need. Seeing them side by side makes that trade-off obvious.</li>
               <li><strong>Satellite navigation:</strong> knowing where the satellites are is the first step to working out
-                which ones your receiver can see and how accurate your position will be. That is exactly my next project:
-                <em>Galileo visibility and DOP from Madrid</em>.</li>
+                which ones your receiver can see and how accurate your position will be. My follow-up project,
+                <a href="project.html?id=galileo-vs-starlink-madrid">Galileo vs Starlink</a>, takes that step from Madrid.</li>
             </ul>
           `,
         },
@@ -343,14 +343,5 @@ const PROJECTS = [
         },
       ],
     },
-  },
-
-  {
-    id: "galileo-dop-madrid",
-    status: "soon",
-    title: "Galileo visibility & DOP from Madrid",
-    meta: "Coming soon",
-    summary:
-      "Which Galileo satellites are visible from Madrid over a day, and how their geometry (DOP) affects positioning accuracy.",
   },
 ];
