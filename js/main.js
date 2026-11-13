@@ -2,10 +2,12 @@
    Portfolio – main script
      1. Project cards (built from PROJECTS in projects.js)
      2. Project page (project.html)
+    2b. Blocks built from a project's orbit data (facts, tables)
      3. Mobile menu
      4. Active section in the menu
      5. Copy email
      6. Small extras (footer year, reduced motion)
+     7. Orbit data loader (shared with orbits.html)
    No libraries: plain DOM APIs only.
    ========================================================= */
 
@@ -96,25 +98,47 @@ if (projectsList && typeof PROJECTS !== "undefined") {
    from the URL (?id=...), finds that project in PROJECTS and builds the page. */
 const projectPage = document.getElementById("project-page");
 
+function factsTemplate(facts) {
+  return `<dl class="key-facts">
+    ${facts.map((f) => `
+      <div class="key-facts__item">
+        <dt>${escapeHTML(f.label)}</dt>
+        <dd>${escapeHTML(f.value)}</dd>
+      </div>`).join("")}
+  </dl>`;
+}
+
+// Adds a query parameter to a relative URL: "orbits.html?project=x" + embed=1
+function withParam(url, key, value) {
+  return `${url}${url.includes("?") ? "&" : "?"}${key}=${encodeURIComponent(value)}`;
+}
+
 function detailTemplate(project) {
   const d = project.details;
 
-  const facts = d.facts?.length
-    ? `<dl class="key-facts">
-         ${d.facts.map((f) => `
-           <div class="key-facts__item">
-             <dt>${escapeHTML(f.label)}</dt>
-             <dd>${escapeHTML(f.value)}</dd>
-           </div>`).join("")}
-       </dl>`
-    : "";
+  // facts: a fixed list, or "data" = computed from the project's orbit data (see section 2b)
+  const facts = d.facts === "data"
+    ? `<div data-slot="facts"></div>`
+    : d.facts?.length ? factsTemplate(d.facts) : "";
 
+  // A section may have its own text (body) and/or a block generated from the data (data: "...")
   const sections = d.sections
     .map((s, i) => `
       <section class="detail__section">
         <h2><span class="detail__section-num">${String(i + 1).padStart(2, "0")}</span>${escapeHTML(s.title)}</h2>
-        ${s.body}
+        ${s.body || ""}
+        ${s.data ? `<div data-slot="${escapeHTML(s.data)}"><p class="detail__loading">Loading data…</p></div>` : ""}
       </section>`)
+    .join("");
+
+  // Links between projects ("Built on top of …", "Follow-up project …")
+  const related = (project.related || [])
+    .map((r) => {
+      const other = PROJECTS.find((p) => p.id === r.id);
+      return other
+        ? `<p class="related"><span>${escapeHTML(r.label)}</span> <a href="${projectUrl(other.id)}">${escapeHTML(other.title)}</a></p>`
+        : "";
+    })
     .join("");
 
   const tags = project.tech?.length
@@ -139,12 +163,12 @@ function detailTemplate(project) {
          <h2 class="visually-hidden" id="demo-title">Interactive 3D simulation</h2>
          <div class="demo__frame" id="demo-frame">
            ${project.image ? `<img src="${escapeHTML(project.image.src)}" alt="" width="${project.image.width}" height="${project.image.height}">` : ""}
-           <button class="btn btn--primary demo__launch" type="button" data-embed="${escapeHTML(project.demo)}?embed=1">
-             <span aria-hidden="true">▶</span> Launch the 24-hour simulation in 3D
+           <button class="btn btn--primary demo__launch" type="button" data-embed="${escapeHTML(withParam(project.demo, "embed", "1"))}">
+             <span aria-hidden="true">▶</span> ${escapeHTML(d.demoLabel || "Launch the 24-hour simulation in 3D")}
            </button>
          </div>
          <p class="demo__hint">
-           Play the day, drag the time bar to any instant and click a satellite to see its orbit data ·
+           ${escapeHTML(d.demoHint || "Play the day, drag the time bar to any instant and click a satellite to see its orbit data")} ·
            <a href="${escapeHTML(project.demo)}">open the viewer in a full page</a>
          </p>
        </section>`
@@ -159,6 +183,7 @@ function detailTemplate(project) {
         <p class="project-card__meta">${escapeHTML(project.meta)}</p>
         ${d.tagline ? `<p class="detail__tagline">${escapeHTML(d.tagline)}</p>` : ""}
         ${tags}
+        ${related}
       </header>
     </div>
     <div class="container detail__wide">${demo || cover}</div>
@@ -192,6 +217,18 @@ if (projectPage && typeof PROJECTS !== "undefined") {
     // Browser tab title and description adapted to this project
     document.title = `${project.title} | Antonio Rodríguez-Palmero`;
     document.querySelector('meta[name="description"]')?.setAttribute("content", project.summary);
+
+    // Blocks generated from the project's orbit data (facts, tables, limitations)
+    if (project.dataset) {
+      loadOrbitData(project.dataset)
+        .then((data) => fillDataSlots(data))
+        .catch((error) => {
+          console.error(error);
+          projectPage.querySelectorAll("[data-slot]").forEach((slot) => {
+            slot.innerHTML = `<p class="detail__loading">The project data could not be loaded.</p>`;
+          });
+        });
+    }
   } else {
     projectPage.innerHTML = notFoundTemplate();
     document.title = "Project not found | Antonio Rodríguez-Palmero";
@@ -208,6 +245,160 @@ if (projectPage && typeof PROJECTS !== "undefined") {
     iframe.allow = "fullscreen";
     frame.replaceChildren(iframe);
     iframe.focus();   // keyboard users land inside the viewer
+  });
+}
+
+
+/* ---------- 2b. BLOCKS BUILT FROM THE ORBIT DATA ----------
+   Every number in these blocks is read or computed from data/<id>/orbits_web.js:
+   nothing is typed by hand, so regenerating the data updates the page. */
+const utcFormat = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "UTC", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+});
+const fmtUtc = (iso) => utcFormat.format(new Date(iso));
+const fmt1 = (x) => x.toFixed(1);
+const shortSatName = (name) => name.replace(/\s*\(.*\)$/, "");
+
+function formatPeriod(hours) {
+  return hours < 2 ? `${fmt1(hours)} h (${Math.round(hours * 60)} min)` : `${hours.toFixed(2)} h`;
+}
+
+// Satellites grouped by constellation (or by regime if the data has no "group")
+function groupSatellites(data) {
+  const groups = new Map();
+  data.satellites.forEach((sat) => {
+    const key = sat.group || sat.regime;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(sat);
+  });
+  return groups;
+}
+
+function windowHours(data) {
+  return ((data.n_points - 1) * data.step_s) / 3600;
+}
+
+function dataFacts(data) {
+  const groups = groupSatellites(data);
+  const passes = data.satellites.reduce((n, s) => n + (s.passes?.length || 0), 0);
+  const mask = data.observer?.elevation_mask_deg;
+  return [
+    {
+      value: String(data.satellites.length),
+      label: `satellites: ${[...groups].map(([g, sats]) => `${sats.length} ${g}`).join(" · ")}`,
+    },
+    { value: `${fmt1(windowHours(data))} h`, label: `window from ${fmtUtc(data.start_utc)} UTC` },
+    ...(mask !== undefined ? [{ value: String(passes), label: `passes above the ${mask}° mask` }] : []),
+    { value: `${data.step_s} s`, label: "between samples" },
+  ];
+}
+
+function comparisonTemplate(data) {
+  const groups = [...groupSatellites(data)];
+  const mask = data.observer.elevation_mask_deg;
+
+  const stats = groups.map(([name, sats]) => {
+    const passes = sats.flatMap((s) => s.passes || []);
+    const complete = passes.filter((p) => !p.partial);
+    const periods = sats.map((s) => s.period_h);
+    const minP = Math.min(...periods);
+    const maxP = Math.max(...periods);
+    return {
+      name,
+      regimes: [...new Set(sats.map((s) => s.regime))].join("/"),
+      satellites: sats.map((s) => shortSatName(s.name)).join(", "),
+      period: minP.toFixed(2) === maxP.toFixed(2) ? formatPeriod(minP) : `${formatPeriod(minP)} – ${formatPeriod(maxP)}`,
+      passes: passes.length,
+      partial: passes.length - complete.length,
+      meanDuration: complete.length
+        ? complete.reduce((sum, p) => sum + p.duration_min, 0) / complete.length
+        : null,
+      completeCount: complete.length,
+      maxEl: passes.length ? Math.max(...passes.map((p) => p.max_el_deg)) : null,
+    };
+  });
+
+  const row = (label, cell) => `<tr><th scope="row">${label}</th>${stats.map((s) => `<td class="num">${cell(s)}</td>`).join("")}</tr>`;
+
+  return `
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <caption>${stats.map((s) => `${escapeHTML(s.regimes)} (${escapeHTML(s.name)})`).join(" vs ")}</caption>
+        <thead>
+          <tr><th scope="col">From ${escapeHTML(data.observer.name)}</th>${stats.map((s) => `<th scope="col">${escapeHTML(s.name)} · ${escapeHTML(s.regimes)}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${row("Satellites", (s) => escapeHTML(s.satellites))}
+          ${row("Orbital period", (s) => s.period)}
+          ${row(`Passes above ${mask}°`, (s) => `${s.passes}${s.partial ? `<span class="note">${s.partial} cut by the window</span>` : ""}`)}
+          ${row("Mean duration of a complete pass", (s) =>
+            s.meanDuration === null
+              ? `—<span class="note">no complete pass in this window</span>`
+              : `${fmt1(s.meanDuration)} min<span class="note">from ${s.completeCount} complete pass${s.completeCount === 1 ? "" : "es"}</span>`)}
+          ${row("Highest elevation reached", (s) => (s.maxEl === null ? "—" : `${fmt1(s.maxEl)}°`))}
+        </tbody>
+      </table>
+    </div>
+    <p class="table-footnote">
+      Computed from the ${fmt1(windowHours(data))}-hour window starting ${fmtUtc(data.start_utc)} UTC.
+      Passes cut by the start or end of the window are counted, but left out of the mean duration
+      because their real length is unknown.
+    </p>`;
+}
+
+function passesTemplate(data) {
+  const mask = data.observer.elevation_mask_deg;
+  const tables = data.satellites.map((sat) => {
+    const rows = (sat.passes || [])
+      .map((p) => `
+        <tr${p.partial ? ' class="is-partial"' : ""}>
+          <td class="num">${fmtUtc(p.rise_utc)}</td>
+          <td class="num">${fmtUtc(p.set_utc)}</td>
+          <td class="num">${fmt1(p.duration_min)} min${p.partial ? " *" : ""}</td>
+          <td class="num">${fmt1(p.max_el_deg)}°</td>
+        </tr>`)
+      .join("");
+    return `
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <caption>
+            <span class="sat-dot" style="--dot:${escapeHTML(sat.color)}"></span>${escapeHTML(shortSatName(sat.name))}
+            <small>${escapeHTML(sat.group ? `${sat.group} · ${sat.regime}` : sat.regime)} · ${formatPeriod(sat.period_h)}</small>
+          </caption>
+          <thead>
+            <tr><th scope="col">Rise (UTC)</th><th scope="col">Set (UTC)</th><th scope="col">Duration</th><th scope="col">Max elev.</th></tr>
+          </thead>
+          <tbody>
+            ${rows || `<tr><td colspan="4">No pass above ${mask}° in this window.</td></tr>`}
+          </tbody>
+        </table>
+      </div>`;
+  });
+
+  return `
+    <div class="passes-grid">${tables.join("")}</div>
+    <p class="table-footnote">
+      * Cut by the window: the pass had already started when the data window began, or was still
+      going on when it ended, so its real duration is longer than shown.
+    </p>`;
+}
+
+function limitationsTemplate(data) {
+  return `
+    <p>${escapeHTML(data.model_note)}</p>
+    <p class="callout"><strong>Data:</strong> ${escapeHTML(data.source)}</p>`;
+}
+
+function fillDataSlots(data) {
+  const renderers = {
+    facts: () => factsTemplate(dataFacts(data)),
+    comparison: () => (data.observer ? comparisonTemplate(data) : ""),
+    passes: () => (data.observer ? passesTemplate(data) : ""),
+    limitations: () => limitationsTemplate(data),
+  };
+  projectPage.querySelectorAll("[data-slot]").forEach((slot) => {
+    const render = renderers[slot.dataset.slot];
+    slot.innerHTML = render ? render() : "";
   });
 }
 
@@ -310,3 +501,26 @@ function applyMotionPreference() {
 
 applyMotionPreference();
 reducedMotion.addEventListener("change", applyMotionPreference);
+
+
+/* ---------- 7. ORBIT DATA LOADER (shared by project.html and orbits.html) ----------
+   Each project with a viewer has data/<id>/orbits_web.js, written by its Python
+   project, which sets window.ORBITS_WEB_DATA. Loading it with a <script> tag (not
+   fetch) keeps working even when a page is opened straight from disk. */
+function loadOrbitData(id) {
+  // Only simple ids like "galileo-vs-starlink-madrid": never load an arbitrary path
+  if (!/^[a-z0-9-]+$/.test(id)) return Promise.reject(new Error(`Invalid data id: ${id}`));
+
+  return new Promise((resolve, reject) => {
+    delete window.ORBITS_WEB_DATA;
+    const script = document.createElement("script");
+    script.src = `data/${id}/orbits_web.js`;
+    script.onload = () => {
+      const data = window.ORBITS_WEB_DATA;
+      if (data && Array.isArray(data.satellites)) resolve(data);
+      else reject(new Error(`${script.src} does not define ORBITS_WEB_DATA`));
+    };
+    script.onerror = () => reject(new Error(`Could not load ${script.src}`));
+    document.head.append(script);
+  });
+}

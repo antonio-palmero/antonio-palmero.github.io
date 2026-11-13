@@ -34,10 +34,9 @@
   <script src="https://cdn.jsdelivr.net/npm/cesium@1.123.0/Build/Cesium/Cesium.js" defer></script>
 
   <link rel="stylesheet" href="css/style.css">
+  <!-- main.js also provides loadOrbitData(): orbits.js uses it to load
+       data/<project>/orbits_web.js for the project in the URL (?project=...) -->
   <script src="js/main.js" defer></script>
-  <!-- Orbit data from the Python project (window.ORBITS_WEB_DATA). Loaded as a script, not with
-       fetch(), so the viewer also works when the HTML is opened directly from disk (file://). -->
-  <script src="data/orbits_web.js" defer></script>
   <script src="js/orbits.js" defer></script>
 </head>
 
@@ -83,15 +82,24 @@
         <label class="viewer-panel__speed">
           <span>Speed</span>
           <select id="speed-select">
+            <option value="1">×1 (real time)</option>
             <option value="60">×60 (1 min/s)</option>
             <option value="300" selected>×300 (5 min/s)</option>
             <option value="900">×900 (15 min/s)</option>
             <option value="3600">×3600 (1 h/s)</option>
           </select>
         </label>
+        <!-- Only shown when the data window contains the real current time -->
+        <button class="btn btn--small" type="button" id="now-btn" hidden>Now</button>
       </div>
 
       <p class="viewer-panel__time"><span>UTC</span> <time id="clock-readout">—</time></p>
+
+      <!-- When the data was computed: always visible -->
+      <p class="viewer-panel__data">
+        <span class="viewer-panel__data-label">Data window</span> <span id="data-window">—</span><br>
+        <span id="data-source"></span>
+      </p>
 
       <div class="segmented" role="group" aria-label="Reference frame">
         <button type="button" class="segmented__btn" data-frame="ecef" aria-pressed="true">Earth-fixed <small>ECEF</small></button>
@@ -104,9 +112,18 @@
         <p class="legend__explain" id="frame-explain"></p>
         <p class="legend__note" id="model-note"></p>
       </details>
+
+      <!-- Only inside the project page (embedded mode) -->
+      <a class="viewer__fullpage" id="fullpage-link" href="orbits.html" target="_blank" rel="noopener">Open full page ↗</a>
     </section>
 
-    <a class="viewer__fullpage" id="fullpage-link" href="orbits.html" target="_blank" rel="noopener">Open full page ↗</a>
+    <!-- Sky plot: only for projects whose data include an observer (azimuth/elevation) -->
+    <details class="skyplot" id="skyplot" open hidden>
+      <summary id="skyplot-title">Sky plot</summary>
+      <canvas id="skyplot-canvas" role="img"
+              aria-label="Sky plot: azimuth around the circle (north up, east right), zenith in the centre, horizon at the edge. The dashed circle is the elevation mask."></canvas>
+      <p class="skyplot__visible" id="skyplot-visible" aria-live="off"></p>
+    </details>
   </main>
 </body>
 </html>

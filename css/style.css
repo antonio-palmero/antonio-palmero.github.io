@@ -1444,7 +1444,7 @@ strong {
 
 .legend__text {
   display: grid;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: auto 1fr auto;   /* name · regime (may wrap) · live value */
   align-items: baseline;
   gap: 2px 8px;
 }
@@ -1460,6 +1460,7 @@ strong {
 
 .legend__alt {
   justify-self: end;
+  white-space: nowrap;
   color: #9fb0cc;
   font: 0.72rem/1 var(--font-mono);
 }
@@ -1490,17 +1491,9 @@ strong {
 }
 
 .is-embed .viewer__fullpage {
-  position: absolute;
-  top: 12px;
-  right: 92px;
-  z-index: 2;
   display: inline-block;
-  padding: 7px 10px;
-  border-radius: 8px;
-  background: rgba(5, 11, 24, 0.82);
   color: #d6e4ff;
   font: 500 0.75rem/1 var(--font-mono);
-  text-decoration: none;
 }
 
 /* Cesium timeline in the colours of the site */
@@ -1529,11 +1522,6 @@ strong {
     gap: 8px;
   }
 
-  .is-embed .viewer__fullpage {
-    top: auto;
-    bottom: 40px;
-    right: 8px;
-  }
 }
 
 /* ----- "Try it yourself" block in the project page ----- */
@@ -1588,4 +1576,190 @@ strong {
   .demo__frame {
     aspect-ratio: 3 / 4;   /* taller on phones: room for the panel and the timeline */
   }
+}
+
+
+/* ---------- 12. VIEWER: data line, live visibility, sky plot ---------- */
+.viewer-panel__data {
+  margin: 0;
+  color: #9fb0cc;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.viewer-panel__data-label {
+  color: #8db8ff;
+  font: 500 0.68rem/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#data-window {
+  color: #e6ecf8;
+  font-family: var(--font-mono);
+}
+
+/* "el 35°" turns green while the satellite is above the elevation mask */
+.legend__alt.is-visible {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.skyplot {
+  position: absolute;
+  right: 12px;
+  bottom: 44px;                       /* above the timeline */
+  z-index: 2;
+  width: 250px;
+  padding: 10px 12px 12px;
+  border: 1px solid rgba(141, 184, 255, 0.28);
+  border-radius: var(--radius-sm);
+  background: rgba(5, 11, 24, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #e6ecf8;
+}
+
+.skyplot[hidden] {
+  display: none;
+}
+
+.skyplot summary {
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.skyplot canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  margin-top: 6px;
+}
+
+.skyplot__visible {
+  margin: 4px 0 0;
+  color: #9fb0cc;
+  font: 0.72rem/1.4 var(--font-mono);
+}
+
+@media (max-width: 600px) {
+  .skyplot {
+    width: 150px;
+    right: 8px;
+    bottom: 40px;
+    padding: 6px 8px 8px;
+  }
+
+  .skyplot__visible {
+    display: none;                    /* not enough room on phones */
+  }
+
+  .viewer-panel__data {
+    font-size: 0.68rem;
+  }
+}
+
+
+/* ---------- 13. PROJECT PAGE: related link + data tables ---------- */
+.related {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 18px 0 0;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.88rem;
+}
+
+.related span {
+  color: var(--muted);
+}
+
+.related a {
+  font-weight: 600;
+}
+
+.data-table-wrap {
+  overflow-x: auto;                   /* wide tables scroll inside, never the page */
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.data-table caption {
+  padding: 12px 14px 4px;
+  text-align: left;
+  color: var(--heading);
+  font-weight: 600;
+}
+
+.data-table caption .sat-dot {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.data-table caption small {
+  color: var(--muted);
+  font: 500 0.72rem/1 var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+.data-table th,
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table thead th {
+  color: var(--accent);
+  font: 500 0.72rem/1.3 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.data-table tbody th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.data-table tr:last-child th,
+.data-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.data-table td.num {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.data-table .note {
+  display: block;
+  color: var(--muted);
+  font: 0.75rem/1.4 var(--font-body);
+  white-space: normal;
+}
+
+.data-table tr.is-partial td {
+  color: var(--muted);
+}
+
+.table-footnote {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.passes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 0 16px;
 }

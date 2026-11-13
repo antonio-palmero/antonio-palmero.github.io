@@ -12,12 +12,19 @@
      image     { src, alt, width, height }   card image (relative path!)
      tech      list of technologies (chips)
      repo      GitHub URL
-     demo      page with an interactive demo (optional), e.g. "orbits.html"
+     demo      page with an interactive demo (optional),
+               e.g. "orbits.html?project=satellite-orbit-explorer"
+     dataset   folder in data/ with orbits_web.js (optional): the project page
+               builds facts and tables from it, so no number is typed by hand
+     related   links to other projects: [{ id, label }], e.g. "Built on top of"
      details   content of the project page (optional):
        tagline   one-sentence hook under the title
-       facts     key numbers: [{ value, label }]
-       sections  [{ title, body }]  body is HTML written by me, so it may
-                 contain <p>, <ul>, <figure>… (only trusted content here!)
+       facts     key numbers: [{ value, label }], or "data" (computed from dataset)
+       demoLabel / demoHint   texts of the 3D viewer block (optional)
+       sections  [{ title, body, data }]  body is HTML written by me, so it may
+                 contain <p>, <ul>, <figure>… (only trusted content here!);
+                 data = "comparison" | "passes" | "limitations" adds a block
+                 generated from the dataset
    ========================================================= */
 
 const PROJECTS = [
@@ -39,7 +46,8 @@ const PROJECTS = [
     tech: ["Python", "Matplotlib", "KML", "CesiumJS"],
     repo: "https://github.com/antonio-palmero/satellite-orbit-explorer",
     // Interactive 3D viewer: "Explore in 3D" button on the card + embedded block on the project page
-    demo: "orbits.html",
+    demo: "orbits.html?project=satellite-orbit-explorer",
+    related: [{ id: "galileo-vs-starlink-madrid", label: "Follow-up project:" }],
 
     details: {
       tagline:
@@ -209,6 +217,127 @@ const PROJECTS = [
               <li>Solving Kepler's equation numerically and moving from a space-fixed frame to an Earth-fixed one.</li>
               <li>Reading ground tracks: why GEO is a point, IGSO a figure-eight and LEO a set of westward-shifting passes.</li>
               <li>Exporting trajectories to KML to visualise them in Google Earth.</li>
+            </ul>
+          `,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "galileo-vs-starlink-madrid",
+    status: "done",
+    title: "Galileo vs Starlink · Madrid's sky in real time",
+    meta: "Personal project · follow-up to Satellite Orbit Explorer",
+    summary:
+      "Live CelesTrak data for Galileo (MEO) and Starlink (LEO) satellites, propagated over 24 hours and " +
+      "seen from Madrid: a 3D globe with lines of sight, a sky plot and the list of every pass.",
+    // Card cover: Madrid's sky drawn from the real azimuth/elevation data
+    image: {
+      src: "img/galileo-vs-starlink/cover.webp",
+      alt: "Madrid's sky as a circle seen from below: the short, criss-crossing passes of two Starlink satellites and the slow arcs of two Galileo satellites over one day.",
+      width: 1600,
+      height: 900,
+    },
+    tech: ["Python", "Matplotlib", "CelesTrak API", "CesiumJS", "Canvas"],
+    repo: "https://github.com/antonio-palmero/galileo-vs-starlink-madrid",
+    demo: "orbits.html?project=galileo-vs-starlink-madrid",
+    dataset: "galileo-vs-starlink-madrid",
+    related: [{ id: "satellite-orbit-explorer", label: "Built on top of" }],
+
+    details: {
+      tagline: "How do two very different constellations look from the same place on Earth?",
+      demoLabel: "Launch Madrid's sky in 3D",
+      demoHint:
+        "It opens at the current time when that falls inside the data window. Drag the time bar, " +
+        "switch frames and watch the sky plot follow the clock",
+      facts: "data",
+
+      sections: [
+        {
+          title: "Overview",
+          body: `
+            <p>Galileo and Starlink both cross the sky above us, but they live in very different orbits.
+            This project downloads today's orbital data from
+            <a href="https://celestrak.org" target="_blank" rel="noopener">CelesTrak</a>, picks two
+            <strong>Galileo</strong> satellites (medium Earth orbit) and two <strong>Starlink</strong>
+            satellites (low Earth orbit), propagates their orbits over the next day and compares what an
+            observer in <strong>Madrid</strong> sees: how often each one rises, how long it stays above
+            the horizon and how high it climbs.</p>
+            <p>It reuses the orbit engine of my
+            <a href="project.html?id=satellite-orbit-explorer">Satellite Orbit Explorer</a> and adds the
+            observer's point of view.</p>
+          `,
+        },
+        {
+          title: "What it shows",
+          body: `
+            <p><strong>Starlink</strong> satellites race across Madrid's sky in a few minutes, several times
+            a day, and most passes stay low. <strong>Galileo</strong> satellites move slowly and stay up for
+            hours: that is why a GNSS receiver always has several of them in view.</p>
+            <figure class="figure">
+              <a href="img/galileo-vs-starlink/elevation_madrid.webp" target="_blank" rel="noopener" class="figure__link">
+                <img src="img/galileo-vs-starlink/elevation_madrid.webp" width="2379" height="1283" loading="lazy"
+                     alt="Two charts of elevation over Madrid during one day. Top, Galileo: two long, smooth curves lasting hours. Bottom, Starlink: many narrow spikes a few minutes wide, most of them low, a few climbing high.">
+              </a>
+              <figcaption>Elevation of each satellite seen from Madrid over the data window; the dashed line is
+              the elevation mask. Click to open at full size.</figcaption>
+            </figure>
+            <figure class="figure">
+              <a href="img/galileo-vs-starlink/skyplot_madrid.webp" target="_blank" rel="noopener" class="figure__link">
+                <img src="img/galileo-vs-starlink/skyplot_madrid.webp" width="1295" height="1482" loading="lazy"
+                     alt="Sky plot over Madrid: many straight Starlink tracks crossing the whole sky, and two short, curved Galileo arcs.">
+              </a>
+              <figcaption>Sky plot: north up, zenith in the centre, horizon at the edge; the dashed circle is the
+              elevation mask and the dots mark the position when the data was computed.</figcaption>
+            </figure>
+          `,
+        },
+        {
+          title: "LEO vs MEO, in numbers",
+          body: `<p>Same observer, same day, two kinds of orbit. Every figure below is computed from the
+            exported data.</p>`,
+          data: "comparison",
+        },
+        {
+          title: "Every pass over Madrid",
+          data: "passes",
+        },
+        {
+          title: "Method",
+          body: `
+            <ol class="steps">
+              <li><strong>Live orbital data.</strong> GP records (OMM JSON) for the GALILEO and STARLINK
+                groups from CelesTrak, cached for 2 hours because CelesTrak asks users not to poll more
+                often. The satellites are taken from each constellation's operational shell.</li>
+              <li><strong>Propagation.</strong> Two-body Keplerian orbits over a window that starts when the
+                script runs, the same model as Satellite Orbit Explorer.</li>
+              <li><strong>Seen from Madrid.</strong> Every position is turned into azimuth and elevation in
+                Madrid's local frame (east, north, up).</li>
+              <li><strong>Passes.</strong> A satellite counts as visible above a 10° elevation mask, which
+                leaves out the lowest part of the sky, where buildings and terrain usually block the view.
+                Each crossing of the mask gives a pass: rise, set, duration and maximum elevation.</li>
+              <li><strong>Web export.</strong> Earth-fixed and inertial positions, azimuth/elevation and passes
+                go into one data file that this page and the 3D viewer read directly.</li>
+            </ol>
+          `,
+        },
+        {
+          title: "Limitations",
+          body: `<p>This is an educational model, not a precise orbit predictor. Low satellites such as
+            Starlink feel atmospheric drag and manoeuvre often, so the prediction is only meaningful
+            for the day the data was computed.</p>`,
+          data: "limitations",
+        },
+        {
+          title: "Tech stack",
+          body: `
+            <ul>
+              <li><strong>Python</strong> with <code>requests</code> for the CelesTrak API and
+                <strong>Matplotlib</strong> for the plots.</li>
+              <li><strong>CesiumJS</strong> for the 3D globe, the timeline and the lines of sight.</li>
+              <li><strong>HTML Canvas</strong> for the sky plot, synced with the viewer's clock.</li>
+              <li>Plain <strong>HTML, CSS and JavaScript</strong>: no framework, no build step.</li>
             </ul>
           `,
         },
